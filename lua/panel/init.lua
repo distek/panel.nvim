@@ -12,7 +12,10 @@ local order = {}
 ---@type winid[]
 local winStack = {}
 
+---@type boolean
 local debounceNewClosed = false
+
+---@type boolean
 local debounceResize = false
 
 local function setDebounceNewClosed()
@@ -32,6 +35,7 @@ local function setDebounceResize()
 end
 
 ---@param t table
+---@return table
 local function reverseTable(t)
 	if t == nil or next(t) ~= nil and #t == 0 then
 		return {}
@@ -49,35 +53,41 @@ end
 ---@alias bufid number
 ---@alias winid number
 
----@class view
----@field name string
----@field ft string
----@field open fun(): bufid | nil
----@field close function|boolean|nil if the command relies on a window id, use this function to close it upon navigating away
----@field wo table<string, any>
+---@class config
+---@field panel panel
 
 ---@class panel
 ---@field size number
 ---@field views view[]
 
----@class config
----@field panel panel
+---@class view
+---@field name string
+---@field ft string
+---@field open function: bufid | nil
+---@field close function|nil
+---@field wo table<string, any>
 
 ---@class package
 ---@field currentView string|nil
 ---@field winResized boolean
+---@field winClosing boolean
+---@field ignoreFTAutocmd boolean
 ---@field bufs table<string,number|nil>
+---@field win winid|nil
+---@field defaultWinOpts table<string, any>
 ---@field config config
 local M = {
 	currentView = nil,
 
 	winResized = false,
+	winClosing = false,
+	ignoreFTAutocmd = false,
 
 	bufs = {},
 
 	win = nil,
 
-	winOpts = {},
+	defaultWinOpts = {},
 
 	config = {
 		panel = {
@@ -90,7 +100,7 @@ local M = {
 local function saveDefaultWinOpts(winid)
 	for _, v in pairs(M.config.panel.views) do
 		for k, _ in pairs(v.wo) do
-			M.winOpts[k] = vim.api.nvim_get_option_value(
+			M.defaultWinOpts[k] = vim.api.nvim_get_option_value(
 				k,
 				{ scope = "local", win = winid }
 			)
@@ -99,7 +109,7 @@ local function saveDefaultWinOpts(winid)
 end
 
 local function restoreWinOpts(winid)
-	for k, v in pairs(M.winOpts) do
+	for k, v in pairs(M.defaultWinOpts) do
 		vim.wo[winid][k] = v
 	end
 end
@@ -143,6 +153,7 @@ local function createWindow(size)
 		end,
 	})
 
+	-- trigger resize if we _aren't_ resizing manually
 	vim.api.nvim_create_autocmd({ "WinResized", "WinNew", "WinClosed" }, {
 		group = group,
 		callback = function()
@@ -154,6 +165,8 @@ local function createWindow(size)
 		end,
 	})
 
+	-- prevent other buffers from opening in our panel
+	-- opens whatever the new buffer is in a "main" window, as determined by edgy.nvim
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		group = group,
 		callback = function(ev)
@@ -182,6 +195,10 @@ local function createWindow(size)
 
 					-- No main window, scary things are afoot
 					if main == 0 then
+						vim.notify(
+							"panel.nvim: could not find a main window for the new buffer!",
+							vim.log.levels.ERROR
+						)
 						return
 					end
 
@@ -559,7 +576,8 @@ M.previous = function()
 end
 
 -- Toggle the panel
-M.toggle = function()
+---@param focus? boolean
+M.toggle = function(focus)
 	vim.o.lazyredraw = true
 	if M.isOpen() then
 		M.close()
@@ -574,7 +592,7 @@ M.toggle = function()
 		M.currentView = order[1]
 	end
 
-	M.open(true)
+	M.open(focus)
 
 	vim.api.nvim_set_current_win(M.win)
 	vim.o.lazyredraw = false
