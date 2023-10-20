@@ -52,7 +52,7 @@ Here's a simple example that just has a terminal:
                         -- the filetype to lock to the panel
                         ft = "toggleterm",
 
-                        -- The open function returns the buffer ID of whatever we want in the panel
+                        -- The open function should return the buffer ID of whatever we want in the panel
                         open = function()
                             -- open a new terminal in a split (we *want* to create a new window)
                             vim.cmd("split +term")
