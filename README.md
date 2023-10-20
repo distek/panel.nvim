@@ -11,12 +11,6 @@ Lazy:
 ```lua
 {
 	"distek/panel.nvim",
-	dependencies = {
-        -- We use edgy's `require("edgy.editor").list_wins()` to get window
-        -- information in the internal createWindow() function.
-        -- Might replace later with an in-house solution.
-		"folke/edgy.nvim",
-	},
 	config = function()
         require("panel").setup({
             -- config goes here, see the "Configuration" section

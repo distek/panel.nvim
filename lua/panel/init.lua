@@ -166,7 +166,7 @@ local function createWindow(size)
 	})
 
 	-- prevent other buffers from opening in our panel
-	-- opens whatever the new buffer is in a "main" window, as determined by edgy.nvim
+	-- opens whatever the new buffer is in a "main" window
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		group = group,
 		callback = function(ev)
@@ -182,8 +182,18 @@ local function createWindow(size)
 
 					vim.api.nvim_win_set_buf(M.win, M.bufs[M.currentView])
 
+					local mainWins
 					-- get all non edgy or floating windows
-					local mainWins = require("edgy.editor").list_wins().main
+					local ok, edgyWins = pcall(require("edgy.editor").list_wins)
+					if ok then
+						mainWins = edgyWins.main
+					else
+						for _, v in ipairs(vim.api.nvim_list_wins()) do
+							if v ~= M.win then
+								mainWins[v] = v
+							end
+						end
+					end
 
 					-- set main to _something_
 					local main = 0
