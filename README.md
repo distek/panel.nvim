@@ -325,11 +325,12 @@ package {
 ## Real-world example
 
 See the various parts of my config (at the time of this writing):
-[plugin def](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/plugins/ui/panel.lua)
-[config](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/configs/ui/panel.lua)
-[mappings (toggle)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/misc.lua#L120-L142)
-[mappings (next/previous)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/window.lua#L101-L107)
-If you have a mapping for resizing, include a:
+
+- [plugin def](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/plugins/ui/panel.lua)
+- [config](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/configs/ui/panel.lua)
+- [mappings (toggle)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/misc.lua#L120-L142)
+- [mappings (next/previous)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/window.lua#L101-L107)
+  If you have a mapping for resizing, include a:
 
 ```lua
 	require("panel").winResized = true
