@@ -42,48 +42,46 @@ Here's a simple example that just has a terminal:
 	"distek/panel.nvim",
 	config = function()
         require("panel").setup({
-            panel = {
-                size = 15,
-                views = {
-                    {
-                        -- the name of the panel view (will also be shown in the winbar)
-                        name = "Terminal",
+            size = 15,
+            views = {
+                {
+                    -- the name of the panel view (will also be shown in the winbar)
+                    name = "Terminal",
 
-                        -- the filetype to lock to the panel
-                        ft = "toggleterm",
+                    -- the filetype to lock to the panel
+                    ft = "toggleterm",
 
-                        -- The open function should return the buffer ID of whatever we want in the panel
-                        open = function()
-                            -- open a new terminal in a split (we *want* to create a new window)
-                            vim.cmd("split +term")
+                    -- The open function should return the buffer ID of whatever we want in the panel
+                    open = function()
+                        -- open a new terminal in a split (we *want* to create a new window)
+                        vim.cmd("split +term")
 
-                            -- Grab the buffer's ID
-                            local bufid = vim.api.nvim_get_current_buf()
+                        -- Grab the buffer's ID
+                        local bufid = vim.api.nvim_get_current_buf()
 
-                            -- hide the window (closing could delete the buffer, we don't want that)
-                            vim.api.nvim_win_hide(vim.api.nvim_get_current_win())
+                        -- hide the window (closing could delete the buffer, we don't want that)
+                        vim.api.nvim_win_hide(vim.api.nvim_get_current_win())
 
-                            -- finally return the new buffer ID
-                            return bufid
-                        end,
+                        -- finally return the new buffer ID
+                        return bufid
+                    end,
 
-                        -- close is for a specific scenario in which the filetype relies on a specific window
-                        -- Trouble is a good example of this
-                        close = nil,
+                    -- close is for a specific scenario in which the filetype relies on a specific window
+                    -- Trouble is a good example of this
+                    close = nil,
 
-                        -- Additional window options to apply to the panel when this buffer is focused
-                        wo = {
-                            winhighlight = "Normal:ToggleTermNormal",
-                            number = false,
-                            relativenumber = false,
-                            wrap = false,
-                            list = false,
-                            signcolumn = "no",
-                            statuscolumn = "",
-                        },
+                    -- Additional window options to apply to the panel when this buffer is focused
+                    wo = {
+                        winhighlight = "Normal:ToggleTermNormal",
+                        number = false,
+                        relativenumber = false,
+                        wrap = false,
+                        list = false,
+                        signcolumn = "no",
+                        statuscolumn = "",
                     },
+                },
                 -- ... more panels go here
-                }
             }
         })
     end
@@ -225,6 +223,8 @@ Please feel free to submit others (that you've tested thoroughly)!
 
 You can change pretty much whatever you like at any time you like. Just... be careful?
 
+### Overview
+
 ```lua
 package {
     -- Variables --
@@ -234,24 +234,21 @@ package {
 
     -- the config
     config: {
-        -- the panels
-        panel: {
-            -- height of the panel
-            size: number
-            -- the panel views
-            views: {
-                {
-                    -- the view name
-                    name: string
-                    -- the view filetype
-                    ft: string
-                    -- how to open the view; return the buffer's ID
-                    open: function() -> number
-                    -- how to close the view when navigating away (if applicable)
-                    close: function() | nil
-                    -- window options to apply to view
-                    wo: table<string, any>
-                }
+        -- height of the panel
+        size: number
+        -- the panel views
+        views: {
+            {
+                -- the view name
+                name: string
+                -- the view filetype
+                ft: string
+                -- how to open the view; return the buffer's ID
+                open: function() -> number
+                -- how to close the view when navigating away (if applicable)
+                close: function() | nil
+                -- window options to apply to view
+                wo: table<string, any>
             }
         }
     }
@@ -316,14 +313,7 @@ package {
 }
 ```
 
-## Real-world example
-
-See the various parts of my config (at the time of this writing):
-
-- [plugin def](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/plugins/ui/panel.lua)
-- [config](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/configs/ui/panel.lua)
-- [mappings (toggle)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/misc.lua#L120-L142)
-- [mappings (next/previous)](https://github.com/distek/config.nvim/blob/34176c2e0127e82c63acab070dfc7e5ef2bc8221/lua/mappings/window.lua#L101-L107)
+### Resizing
 
 If you have a mapping for resizing, include a:
 
@@ -337,7 +327,7 @@ at the beginning of the map function, and a
 	require("panel").winResized = false
 ```
 
-to prevent panel from forcing it's size back to the configured size.
+at the end, to prevent panel from forcing it's size back to the configured size.
 
 This will also save the new size so it can be recalled later when panel needs to resize itself
 
