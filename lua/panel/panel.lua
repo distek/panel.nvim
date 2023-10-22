@@ -134,9 +134,18 @@ M.close = function()
 	M.win = nil
 end
 
+---@param delay number
+local function deferRedraw(delay)
+	vim.cmd("set lazyredraw")
+	util.defer(function()
+		vim.cmd("set nolazyredraw")
+		vim.cmd("redraw")
+	end, delay)
+end
+
 ---@param name string
 M.setView = function(name)
-	vim.o.lazyredraw = true
+	deferRedraw(100)
 
 	local view = getView(name)
 	if view == nil then
@@ -155,17 +164,15 @@ M.setView = function(name)
 		M.win = window.createWindow(M.config.size)
 	end
 
+	util.restoreWinOpts(M.win)
+
 	if M.bufs[name] == nil or not vim.api.nvim_buf_is_valid(M.bufs[name]) then
 		handleOpen(name, view)
 	end
 
 	util.debounceResize = true
-	util.debounceNewClosed = true
 	vim.api.nvim_win_set_height(M.win, M.config.size)
 	util.debounceResize = false
-	util.debounceNewClosed = false
-
-	util.restoreWinOpts(M.win)
 
 	if M.currentView ~= name then
 		M.currentView = name
@@ -178,8 +185,6 @@ M.setView = function(name)
 	util.setWinOpts(M.win, view.wo)
 
 	cleanBufs()
-
-	vim.o.lazyredraw = false
 end
 
 M.handleClickTab = function(minwid, _, _, _)
@@ -199,6 +204,7 @@ M.open = function(opts)
 					opts.name
 				)
 			)
+			return
 		end
 
 		M.currentView = opts.name
@@ -211,24 +217,6 @@ M.open = function(opts)
 
 	if M.win == nil or not vim.api.nvim_win_is_valid(M.win) then
 		M.win = window.createWindow(M.config.size)
-	end
-
-	if
-		(
-			M.bufs[M.currentView] == nil
-			or not vim.api.nvim_buf_is_valid(M.bufs[M.currentView])
-		) and opts.name == nil
-	then
-		for _, v in ipairs(PanelOrder) do
-			if M.bufs[v] ~= nil and vim.api.nvim_buf_is_valid(M.bufs[v]) then
-				M.currentView = v
-			end
-		end
-	end
-
-	-- To avoid weirdness with window-oriented plugins
-	if M.isOpen() then
-		M.close()
 	end
 
 	M.setView(M.currentView)
@@ -247,23 +235,6 @@ M.next = function()
 			current = i
 			break
 		end
-	end
-
-	local view = getView(M.currentView)
-	if view == nil then
-		vim.notify(
-			string.format(
-				"panel.nvim: next: view with name %s not found in config",
-				M.currentView
-			),
-			vim.log.levels.ERROR
-		)
-
-		return
-	end
-
-	if view.close then
-		view.close()
 	end
 
 	if current == #PanelOrder then
@@ -288,24 +259,6 @@ M.previous = function()
 		end
 	end
 
-	local view = getView(M.currentView)
-	if view == nil then
-		vim.notify(
-			string.format(
-				"panel.nvim: previous: view with name %s not found in config",
-				M.currentView
-			),
-			vim.log.levels.ERROR
-		)
-
-		return
-	end
-
-	-- close the current panel window if
-	if view.close then
-		view.close()
-	end
-
 	current = current - 1
 
 	if current <= 0 then
@@ -325,8 +278,6 @@ M.toggle = function(focus)
 	if M.isOpen() then
 		M.close()
 
-		vim.o.lazyredraw = false
-
 		return
 	end
 
@@ -336,8 +287,6 @@ M.toggle = function(focus)
 	end
 
 	M.open({ focus = focus })
-
-	vim.api.nvim_set_current_win(M.win)
 end
 
 return M

@@ -29,7 +29,7 @@ function M.createWindow(size)
 		group = group,
 		callback = function()
 			vim.o.eventignore = "WinResized"
-			if not util.debounceResize and not util.debounceNewClosed then
+			if not util.debounceResize then
 				if panel.winResized then
 					panel.size = vim.api.nvim_win_get_height(panel.win)
 
@@ -129,21 +129,16 @@ function M.createWindow(size)
 		pattern = tostring(panelWin),
 		group = group,
 		callback = function(ev)
-			vim.o.eventignore = "WinClosed"
-			if not util.debounceNewClosed then
-				util.defer(function()
-					if tonumber(ev.match) == panel.win then
-						if panel.winClosing then
-							return
-						end
-
-						panel.open({ focus = true })
-						vim.o.eventignore = ""
+			util.defer(function()
+				if tonumber(ev.match) == panel.win then
+					if panel.winClosing then
+						return
 					end
-				end, 10)
-			else
-				vim.o.eventignore = ""
-			end
+
+					panel.open({ focus = true })
+					vim.o.eventignore = ""
+				end
+			end, 10)
 		end,
 	})
 
@@ -165,8 +160,6 @@ function M.createWindow(size)
 			end
 		end,
 	})
-
-	util.setDebounceNewClosed()
 
 	vim.o.lazyredraw = false
 	return panelWin

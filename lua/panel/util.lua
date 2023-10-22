@@ -11,18 +11,7 @@ end
 M.defer = defer
 
 ---@type boolean
-M.debounceNewClosed = false
-
----@type boolean
 M.debounceResize = false
-
-function M.setDebounceNewClosed()
-	M.debounceNewClosed = true
-
-	defer(function()
-		M.debounceNewClosed = false
-	end, 100)
-end
 
 function M.setDebounceResize()
 	M.debounceResize = true

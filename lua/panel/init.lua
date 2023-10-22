@@ -22,10 +22,6 @@ local function setupFTAutocmds(orderIdx, view)
 					local temp = vim.o.eventignore
 					vim.o.eventignore = "FileType"
 
-					if view.close then
-						view.close()
-					end
-
 					M.currentView = PanelOrder[orderIdx]
 					M.bufs[M.currentView] = ev.buf
 
