@@ -226,6 +226,11 @@ M.open = function(opts)
 		end
 	end
 
+	-- To avoid weirdness with window-oriented plugins
+	if M.isOpen() then
+		M.close()
+	end
+
 	M.setView(M.currentView)
 
 	if opts.focus ~= nil and not opts.focus then
