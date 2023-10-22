@@ -214,8 +214,10 @@ M.open = function(opts)
 	end
 
 	if
-		M.bufs[M.currentView] == nil
-		or not vim.api.nvim_buf_is_valid(M.bufs[M.currentView])
+		(
+			M.bufs[M.currentView] == nil
+			or not vim.api.nvim_buf_is_valid(M.bufs[M.currentView])
+		) and opts.name == nil
 	then
 		for _, v in ipairs(PanelOrder) do
 			if M.bufs[v] ~= nil and vim.api.nvim_buf_is_valid(M.bufs[v]) then
