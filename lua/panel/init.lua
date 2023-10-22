@@ -1,6 +1,6 @@
 local util = require("panel.util")
 
-M = require("panel.panel")
+local M = require("panel.panel")
 
 ---@type string[]
 PanelOrder = {}
