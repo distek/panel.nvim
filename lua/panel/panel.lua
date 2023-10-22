@@ -71,8 +71,7 @@ local renderWinbar = function(winid)
 
 	for i, v in ipairs(PanelOrder) do
 		if v == M.currentView then
-			wb = wb .. "%#TabLineSel#▎"
-			wb = wb .. "%#TabLineSel# "
+			wb = wb .. "%#TabLineSel#▎ "
 		else
 			wb = wb .. "%#TabLine#▎%#TabLine# "
 		end
@@ -81,7 +80,7 @@ local renderWinbar = function(winid)
 
 		wb = wb .. v .. " %X"
 
-		wb = wb .. " %#TabLineFill# "
+		wb = wb .. " %#TabLineFill#"
 
 		wb = wb .. "%#Normal#"
 	end
