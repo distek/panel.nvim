@@ -21,7 +21,7 @@ Lazy:
 
 ## Why?
 
-I like VS Code's panel, but I _don't_ like VS Code's pain-in-the-ass customization.
+I like VS Code's panel concept, but I _don't_ like VS Code's pain-in-the-ass customization.
 
 ## Configuration
 
@@ -29,13 +29,11 @@ Configuration of panel is a bit weird!
 
 The way panel works is:
 
-- Determine the (now) current panel
-- Close the view for the current panel (if panel is already open)
-- Get the new buffer from the view's `open()` function
+- use the view's `open()` function (set by the user) to return the view's buffer ID
 - set the panel window to that buffer
 - update the winbar of the panel, 'cause we fancy
 
-Here's a simple example that just has a terminal:
+Here's an example that just has a terminal:
 
 ```lua
 {
@@ -61,6 +59,9 @@ Here's a simple example that just has a terminal:
 
                         -- hide the window (closing could delete the buffer, we don't want that)
                         vim.api.nvim_win_hide(vim.api.nvim_get_current_win())
+
+                        -- Plugins would do this for you typically
+                        vim.bo[bufid].filetype = "toggleterm"
 
                         -- finally return the new buffer ID
                         return bufid
@@ -91,8 +92,9 @@ Here's a simple example that just has a terminal:
 Three main things we need to focus on here in the `open` function:
 
 1. Create a new window (if the command doesn't already do this)
+   - if the command has a `toggle` and an `open` command, using the `open` is usually the way to go
 2. Store the buffer ID of the created window
-3. Hide whatever the original window was (if not set in the command's args, see the Trouble example for a special case)
+3. Hide `vim.api.nvim_win_hide(winid)` whatever the original window was (if not set in the command's args, see the Trouble example for a special case)
 4. Return the buffer ID
 
 Here's some more examples:
@@ -103,6 +105,8 @@ Here's some more examples:
 https://github.com/folke/trouble.nvim
 
 Note: as mentioned above, Trouble is a special case where we _don't_ want to close the window.
+
+(This example might change in the future - watch this space!)
 
 ```lua
     {
@@ -132,10 +136,7 @@ Note: as mentioned above, Trouble is a special case where we _don't_ want to clo
         end,
         close = function()
             -- We close the trouble window, saving our current cursor position to a global: TroublePos
-            if
-                vim.api.nvim_get_current_buf()
-                == require("panel").bufs["Problems"]
-            then
+            if vim.api.nvim_get_current_buf() == require("panel").bufs["Problems"] then
                 TroublePos = vim.api.nvim_win_get_cursor(
                     require("panel").win
                 )
@@ -188,17 +189,23 @@ Note: as mentioned above, Trouble is a special case where we _don't_ want to clo
         ft = "help",
         open = function()
             local bufid = 0
-            -- if we have a help buf already, use that
             for _, v in ipairs(vim.api.nvim_list_bufs()) do
                 if vim.bo[v].filetype == "help" then
                     bufid = v
+                    for _, win in vim.api.nvim_list_wins() do
+                        if vim.api.nvim_win_get_buf(win) == bufid then
+                            vim.api.nvim_win_hide(win)
+                            break
+                        end
+                    end
+                    break
                 end
             end
 
             if bufid == 0 then
-                -- otherwise make sure we have a buf to show
                 vim.cmd("help help")
                 bufid = vim.api.nvim_get_current_buf()
+                vim.api.nvim_win_hide(vim.api.nvim_get_current_win())
             end
 
             return bufid
@@ -206,11 +213,11 @@ Note: as mentioned above, Trouble is a special case where we _don't_ want to clo
         close = false,
         wo = {
             number = false,
-            winhighlight = "Normal:ToggleTermNormal",
             relativenumber = false,
             list = false,
             signcolumn = "no",
             statuscolumn = "",
+            winhighlight = "Normal:EdgyTermNormal",
         },
     },
 ```
@@ -228,9 +235,6 @@ You can change pretty much whatever you like at any time you like. Just... be ca
 ```lua
 package {
     -- Variables --
-
-    -- table of panel name ("Terminal") keys to buffer associations
-    bufs: table<string, number|nil>
 
     -- the config
     config: {
@@ -253,6 +257,9 @@ package {
         }
     }
 
+    -- table of panel name ("Terminal") keys to buffer associations
+    bufs: table<string, number|nil>
+
     -- name of the current view
     currentView: string|nil
 
@@ -261,7 +268,9 @@ package {
 
     -- stores the default window opts applied to new windows before applying specific window opts
     -- setup in the local createWindow function
-    winOpts: table
+    defaultWinOpts: table
+
+    -----------------------------------------------------------------------------------------------------------
 
     -- Event blockers --
 
@@ -275,6 +284,7 @@ package {
     -- prevent panel's WinClosed autocmds from running on true
     winClosing: boolean
 
+    -----------------------------------------------------------------------------------------------------------
 
     -- Functions --
 
@@ -333,9 +343,8 @@ This will also save the new size so it can be recalled later when panel needs to
 
 ## Known issues
 
-- Flickering when you switch a panel
-  - Not sure what to do about this, tried using `vim.o.lazyredraw` to no avail
-  - If you know how to fix it, please let me know
+- Plugins that depend on the original window they were opened with can be problematic and will require special attention
+  - i.e. [trouble.nvim](https://github.com/folke/trouble.nvim)
 
 ## Contributing
 
