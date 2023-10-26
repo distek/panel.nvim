@@ -1,5 +1,7 @@
 # panel.nvim
 
+**Note**: I would consider this unstable/alpha at the moment. Expect breaking changes and whatnot! I will do my best to avoid such
+
 A ~~VSCode~~-ish bottom panel for Neovim
 
 ![screenshot](screenshot.png)
