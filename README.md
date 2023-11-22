@@ -106,7 +106,7 @@ Here's some more examples:
 
 https://github.com/folke/trouble.nvim
 
-Note: as mentioned above, Trouble is a special case where we _don't_ want to close the window.
+Note: as mentioned above, Trouble is a special case. In which we specify the panel window ID as the winid when opening
 
 (This example might change in the future - watch this space!)
 
@@ -115,8 +115,6 @@ Note: as mentioned above, Trouble is a special case where we _don't_ want to clo
         name = "Problems",
         ft = "Trouble",
         open = function()
-            -- We set the window to the panel window on open, as trouble relies on the window ID in it's code
-            -- If we _don't_ provide a window, then trouble will create it's own and this all falls apart
             require("trouble").open({
                 win = require("panel").win,
             })
@@ -125,35 +123,23 @@ Note: as mentioned above, Trouble is a special case where we _don't_ want to clo
 
             vim.bo[bufid].buflisted = false
 
-            -- since we close the window each time, cursor
-            -- position gets lost
-            -- save it to a global so we can recall it later
-            vim.api.nvim_win_set_cursor(
-                require("panel").win,
-                -- TroublePos will be officially defined once you close the navigate away from this view
-                TroublePos or { 0, 0 }
-            )
+            vim.api.nvim_create_autocmd({
+                "BufEnter",
+            }, {
+                callback = function(ev)
+                    if string.match(ev.match, "Trouble") then
+                        require("trouble").set_win(require("panel").win)
+                    end
+                end,
+            })
 
             return bufid
         end,
-        close = function()
-            -- We close the trouble window, saving our current cursor position to a global: TroublePos
-            if vim.api.nvim_get_current_buf() == require("panel").bufs["Problems"] then
-                TroublePos = vim.api.nvim_win_get_cursor(
-                    require("panel").win
-                )
-            end
-
-            -- since we're closing the window, we tell the "WinClosed" autocmds setup by panel.nvim to knock it off for a moment
-            require("panel").winClosing = true
-            require("trouble").close()
-            require("panel").winClosing = false
-        end,
+        close = false,
         wo = {
-            winhighlight = "Normal:ToggleTermNormal",
+            winhighlight = "Normal:EdgyTermNormal",
         },
     },
-
 ```
 
 </details>
