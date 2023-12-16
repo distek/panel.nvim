@@ -21,15 +21,16 @@
 ---@field win winid|nil
 ---@field defaultWinOpts table<string, any>
 ---@field config config
----@field resize function
----@field isOpen function
----@field close function
----@field setView function
----@field handleClickTab function
----@field open function
----@field next function
----@field previous function
----@field toggle function
+---@field resize? function
+---@field isOpen? function
+---@field close? function
+---@field setView? function
+---@field handleClickTab? function
+---@field open? function
+---@field next? function
+---@field previous? function
+---@field toggle? function
+---@field setup? function
 
 ---@class openOpts
 ---@field name? string
