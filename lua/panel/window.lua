@@ -16,7 +16,7 @@ function M.createWindow(size)
 
 	local group = vim.api.nvim_create_augroup("PanelWin", { clear = true })
 
-	vim.cmd("noautocmd horizontal botright split")
+	vim.cmd("noautocmd horizontal botright " .. panel.config.size .. " split")
 	panelWin = vim.api.nvim_get_current_win()
 
 	util.saveDefaultWinOpts(panelWin)
