@@ -17,6 +17,7 @@ local M = {
 
 	config = {
 		size = 15,
+		extPanels = {},
 		views = {},
 	},
 }

@@ -60,63 +60,77 @@ function M.createWindow(size)
 		callback = function(ev)
 			util.defer(function()
 				if vim.api.nvim_get_current_win() == panel.win then
-					for _, v in pairs(panel.bufs) do
-						if ev.buf == v then
+					-- filetype check
+					for _, v in pairs(panel.config.views) do
+						if ev.buf == v.ft then
+							-- Buf is fine
 							return
 						end
 					end
 
+					-- get this new buffer
 					local buf = vim.api.nvim_win_get_buf(panel.win)
 
+					-- set our panel back to currentView or the first panel
 					vim.api.nvim_win_set_buf(
 						panel.win,
 						panel.bufs[panel.currentView]
 					)
 
-					local mainWins
-					-- get all non edgy or floating windows
-					local ok, edgyWins = pcall(require("edgy.editor").list_wins)
-					if ok then
-						mainWins = edgyWins.main
-					else
-						for _, v in ipairs(vim.api.nvim_list_wins()) do
-							if v ~= panel.win then
-								mainWins[v] = v
+					local previousWin = vim.fn.winnr("#")
+
+					-- if the previous window isn't in the ignored ft's, send buf there
+					if vim.api.nvim_win_is_valid(previousWin) then
+						if
+							not util.ignoreFt(
+								vim.api.nvim_win_get_buf(previousWin),
+								panel.config.extPanels
+							)
+						then
+							vim.api.nvim_win_set_buf(previousWin, buf)
+							return
+						end
+					end
+
+					local mainWins = {}
+
+					-- get all non special or floating windows
+					for _, v in ipairs(vim.api.nvim_list_wins()) do
+						if vim.api.nvim_win_get_config(v).relative == "" then
+							if
+								not util.ignoreFt(
+									vim.api.nvim_win_get_buf(v),
+									panel.config.extPanels
+								)
+							then
+								table.insert(mainWins, v)
 							end
 						end
 					end
 
-					-- set main to _something_
 					local main = 0
 
-					for _, v in pairs(mainWins) do
-						main = v
-						break
+					if #mainWins ~= 0 then
+						main = mainWins[0]
 					end
 
-					-- No main window, scary things are afoot
+					-- we lost the last main window, create a new one
 					if main == 0 then
-						vim.notify(
-							"panel.nvim: could not find a main window for the new buffer!",
-							vim.log.levels.ERROR
-						)
-						return
-					end
+						local switchTo = 0
+						-- find the first non-ignored buffer
+						for _, v in vim.api.nvim_list_bufs() do
+							if not util.ignoreFt(v, panel.config.extPanels) then
+								switchTo = v
+								break
+							end
+						end
 
-					-- check our global winstack and if one of them is
-					-- in mainWins, use it
-					local revWins = util.reverseTable(winStack)
+						-- create a split above
+						vim.cmd("horizontal aboveleft split")
 
-					if revWins == nil then
-						vim.api.nvim_win_set_buf(main, buf)
-						return
-					end
-
-					for _, v in ipairs(revWins) do
-						if mainWins[v] ~= nil then
-							vim.api.nvim_win_set_buf(main, buf)
-
-							return
+						-- we couldn't find a normal buffer, create an empty one
+						if switchTo == 0 then
+							vim.cmd("enew")
 						end
 					end
 				end

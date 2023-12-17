@@ -3,6 +3,7 @@
 
 ---@class config
 ---@field size number
+---@field extPanels string[]
 ---@field views view[]
 
 ---@class view

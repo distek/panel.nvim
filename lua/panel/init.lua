@@ -60,7 +60,11 @@ M.setup = function(config)
 		return
 	end
 
-	M.config = vim.deepcopy(config)
+	for _, v in ipairs(config.views) do
+		table.insert(M.config.extPanels, v.ft)
+	end
+
+	M.config = vim.tbl_deep_extend("force", {}, M.config, config)
 
 	for i, v in ipairs(M.config.views) do
 		PanelOrder[i] = v.name

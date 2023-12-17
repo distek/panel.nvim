@@ -62,4 +62,16 @@ function M.setWinOpts(winid, opts)
 	end
 end
 
+---@param buf bufid
+---@param ignoreFts bufid[]
+function M.ignoreFt(buf, ignoreFts)
+	for _, v in ipairs(ignoreFts) do
+		if vim.bo[buf].filetype == v then
+			return true
+		end
+	end
+
+	return false
+end
+
 return M
