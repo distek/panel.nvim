@@ -166,9 +166,9 @@ M.setView = function(name)
 
 	vim.api.nvim_win_set_buf(M.win, M.bufs[name])
 
-	renderWinbar(M.win)
-
 	util.setWinOpts(M.win, view.wo)
+
+	renderWinbar(M.win)
 
 	cleanBufs()
 end
