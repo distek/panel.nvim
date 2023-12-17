@@ -77,7 +77,7 @@ local renderWinbar = function(winid)
 			wb = wb .. "%#TabLine#▎%#TabLine# "
 		end
 
-		wb = wb .. "%" .. i .. "@v:lua.Panel.handleClickTab@ "
+		wb = wb .. "%" .. i .. "@v:lua.require'panel'.handleClickTab@ "
 
 		wb = wb .. v .. " %X"
 
