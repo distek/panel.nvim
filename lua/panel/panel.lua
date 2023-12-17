@@ -131,19 +131,8 @@ M.close = function()
 	M.win = nil
 end
 
----@param delay number
-local function deferRedraw(delay)
-	vim.cmd("set lazyredraw")
-	util.defer(function()
-		vim.cmd("set nolazyredraw")
-		vim.cmd("redraw")
-	end, delay)
-end
-
 ---@param name string
 M.setView = function(name)
-	deferRedraw(100)
-
 	local view = getView(name)
 	if view == nil then
 		vim.notify(

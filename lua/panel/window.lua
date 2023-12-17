@@ -10,8 +10,6 @@ local winStack = {}
 function M.createWindow(size)
 	local panel = require("panel.panel")
 
-	vim.o.lazyredraw = true
-
 	local panelWin = 0
 
 	local group = vim.api.nvim_create_augroup("PanelWin", { clear = true })
@@ -175,7 +173,6 @@ function M.createWindow(size)
 		end,
 	})
 
-	vim.o.lazyredraw = false
 	return panelWin
 end
 
