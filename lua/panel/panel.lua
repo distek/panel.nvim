@@ -113,16 +113,12 @@ end
 
 ---@return boolean
 M.isOpen = function()
-	if M.win == nil then
+	if M.win == nil or not vim.api.nvim_win_is_valid(M.win) then
+		M.win = nil
 		return false
 	end
 
-	if vim.api.nvim_win_is_valid(M.win) then
-		return true
-	end
-
-	M.win = nil
-	return false
+	return true
 end
 
 M.close = function()
