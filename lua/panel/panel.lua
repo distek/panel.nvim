@@ -184,7 +184,7 @@ M.open = function(opts)
 	if opts.name then
 		local optView = getView(opts.name)
 		if optView == nil then
-			vim.notify(
+			vim.error(
 				string.format(
 					"panel.nvim: open: requested view does not exist: %s",
 					opts.name
