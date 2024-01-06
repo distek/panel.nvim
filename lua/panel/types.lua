@@ -27,6 +27,8 @@
 ---@field close? function
 ---@field setView? function
 ---@field handleClickTab? function
+---@field getNext? function
+---@field getPrevious? function
 ---@field open? function
 ---@field next? function
 ---@field previous? function

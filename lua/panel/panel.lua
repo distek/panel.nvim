@@ -214,7 +214,7 @@ M.open = function(opts)
 	end
 end
 
-M.next = function()
+M.getNext = function()
 	local current = 0
 	for i, v in ipairs(PanelOrder) do
 		if v == M.currentView then
@@ -229,14 +229,10 @@ M.next = function()
 		current = current + 1
 	end
 
-	M.currentView = PanelOrder[current]
-
-	M.ignoreFTAutocmd = true
-	M.setView(M.currentView)
-	M.ignoreFTAutocmd = false
+	return PanelOrder[current]
 end
 
-M.previous = function()
+M.getPrevious = function()
 	local current = 0
 	for i, v in ipairs(PanelOrder) do
 		if v == M.currentView then
@@ -251,7 +247,19 @@ M.previous = function()
 		current = #PanelOrder
 	end
 
-	M.currentView = PanelOrder[current]
+	return PanelOrder[current]
+end
+
+M.next = function()
+	M.currentView = M.getNext()
+
+	M.ignoreFTAutocmd = true
+	M.setView(M.currentView)
+	M.ignoreFTAutocmd = false
+end
+
+M.previous = function()
+	M.currentView = M.getPrevious()
 
 	M.ignoreFTAutocmd = true
 	M.setView(M.currentView)
