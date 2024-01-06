@@ -106,16 +106,33 @@ Here's some more examples:
 <details>
     <summary>trouble.nvim</summary>
 
-_*So!*_
+If you have a panel object that uses a filetype with an LSP server attached (Like a markdown note panel), you need to ignore autocmds when switching panels. Like:
 
-I ended up just forking trouble to do what I want it to do:
-https://github.com/distek/trouble.nvim
+- `noautocmd lua require("panel").next()` or `.previous()`
 
-The branch I use is `set-win`. I cannot guarantee maintenance of this, so you may wish to rather skip this, or fork it yourself.
+Trouble freaks out if it thinks it is still open as it starts trying to check diagnostics for this filetype. Using `noautocmd` will prevent it from seeing the buffer change, effectively skipping it.
+Example of skipping autocmds:
 
-Note: as mentioned above, Trouble is a special case. In which we specify the panel window ID as the winid when opening
+```lua
 
-(This example might change in the future - watch this space!)
+vim.keymap.set({ "t", "n" }, "<A-[>", function()
+	-- Ignore autos unless we're going into Terminal ("so the auto-insert auto still works")
+	-- This mitigates issues with trouble.nvim
+	if require("panel").getPrevious() == "Terminal" then
+		require("panel").previous()
+	else
+		vim.cmd("noautocmd lua require('panel').previous()")
+	end
+end)
+
+vim.keymap.set({ "t", "n" }, "<A-]>", function()
+	if require("panel").getNext() == "Terminal" then
+		require("panel").next()
+	else
+		vim.cmd("noautocmd lua require('panel').next()")
+	end
+end)
+```
 
 ```lua
     {
@@ -130,30 +147,17 @@ Note: as mentioned above, Trouble is a special case. In which we specify the pan
 
             vim.bo[bufid].buflisted = false
 
-            vim.api.nvim_create_autocmd({
-                "BufEnter",
-            }, {
-                callback = function(ev)
-                    if string.match(ev.match, "Trouble") then
-                        require("trouble").set_win(require("panel").win)
-                    end
-                end,
-            })
+            -- As mentioned earlier in the readme, we don't want to hide trouble's window
 
             return bufid
         end,
         close = function()
-            vim.cmd("vsplit")
-            local hideMe = vim.api.nvim_get_current_win()
-
-            require("trouble").set_win(hideMe)
-
-            require("trouble").close(false)
+            require("trouble").close()
         end,
         wo = {
             winhighlight = "Normal:PanelNormal",
         },
-    },
+    }
 ```
 
 </details>
@@ -185,9 +189,6 @@ Note: as mentioned above, Trouble is a special case. In which we specify the pan
 <details>
     <summary>nvim help docs</summary>
 
-Note: I cannot for the life of me get this to _not_ flicker. Should you happen to find a way to do so, please let me know.
-By "flicker" I mean you see the original help window for just a flash and then all the buffer handling/window closing takes place.
-
 ```lua
     {
         name = "Help",
@@ -216,7 +217,7 @@ By "flicker" I mean you see the original help window for just a flash and then a
 
 Please feel free to submit others (that you've tested thoroughly) via issue or PR!
 
-## API?
+## API? Kinda?
 
 You can change pretty much whatever you like at any time you like. Just... be careful?
 
@@ -302,6 +303,12 @@ package {
     -- close the panel
     close: function()
 
+    -- get what the next view _would_ be if we switched to it
+    getNext: function() -> string
+
+    -- same as getNext, just in the opposite direction
+    getPrevious: function() -> string
+
     -- focus the next panel
     next: function()
 
@@ -335,7 +342,16 @@ This will save the new size so it can be recalled later when panel detects a win
 
 - Plugins that depend on the original window they were opened with can be problematic and will require special attention
   - i.e. [trouble.nvim](https://github.com/folke/trouble.nvim)
-- If you use tmux as the command for your panel terminal, you can't click the tabs. It's obnoxious but I have no idea on how to fix it
+- If you use tmux as the command for your panel terminal, you can't click the tabs of the panel itself. You can work around it with something like:
+
+```lua
+    vim.keymap.set("i", "<MouseMove>", function()
+        buf = vim.api.nvim_get_current_buf()
+        if vim.bo[buf].filetype == "toggleterm" then
+            vim.cmd("stopinsert")
+        end
+    end, { silent = true })
+```
 
 ## Contributing
 
