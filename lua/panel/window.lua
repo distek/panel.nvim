@@ -26,7 +26,6 @@ function M.createWindow(size)
 	vim.api.nvim_create_autocmd({ "WinResized" }, {
 		group = group,
 		callback = function()
-			vim.o.eventignore = "WinResized"
 			if not util.debounceResize then
 				if panel.winResized then
 					if vim.api.nvim_win_is_valid(panel.win) then
@@ -38,7 +37,6 @@ function M.createWindow(size)
 					end
 				end
 			end
-			vim.o.eventignore = ""
 		end,
 	})
 
