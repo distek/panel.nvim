@@ -140,7 +140,7 @@ end)
         ft = "Trouble",
         open = function()
             require("trouble").open({
-                win = require("panel").win,
+                win = require("panel").getWin(),
             })
 
             local bufid = vim.api.nvim_get_current_buf()
@@ -236,7 +236,9 @@ package {
         -- height of the panel
         size: number
         -- filetype's that should not be used when moving a rouge buffer out of the panel
-        extPanels = string[]
+        extPanels: string[]
+        -- Each tabpage has it's own panel (disabled by default)
+        tabScoped: boolean
         -- the panel views
         views: {
             {
@@ -320,6 +322,12 @@ package {
 
     -- set's the panel's view to name
     setView: function(name: string)
+
+    -- get the panel's window (tabScoped or not)
+    getWin: function() -> winid|nil
+
+    -- Create a new panel, shouldn't ever have to be ran by the user
+    getWin: function() -> tabScope (panel, basically)
 
     -- setup function
     setup: function(config: config)

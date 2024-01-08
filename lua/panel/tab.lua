@@ -18,6 +18,7 @@ local function cleanBufs()
 	end
 end
 
+---@param winid winid
 local renderWinbar = function(self, winid)
 	local wb = ""
 
@@ -90,6 +91,15 @@ local function hasBufs(self)
 	return false
 end
 
+-- Manually trigger a size reset of the panel
+M.resize = function(self)
+	vim.o.eventignore = "WinResized"
+	vim.api.nvim_win_set_height(self.win, self.config.size)
+	vim.o.eventignore = ""
+end
+
+-- Check if the panel is open
+---@return boolean
 M.isOpen = function(self)
 	if self.win == nil or not vim.api.nvim_win_is_valid(self.win) then
 		self.win = nil
@@ -99,6 +109,7 @@ M.isOpen = function(self)
 	return true
 end
 
+-- Close the panel
 M.close = function(self)
 	if vim.api.nvim_win_is_valid(self.win) then
 		self.winClosing = true
@@ -109,6 +120,8 @@ M.close = function(self)
 	self.win = nil
 end
 
+-- Set panel's current view to `name`
+---@param name string view name
 M.setView = function(self, name)
 	local view = getView(self, name)
 	if view == nil then
@@ -152,12 +165,15 @@ M.setView = function(self, name)
 	cleanBufs()
 end
 
+-- Winbar tab click handler
 M.handleClickTab = function(self, minwid, _, _, _)
 	self.currentView = PanelOrder[minwid]
 
 	self.setView(self, self.currentView)
 end
 
+-- Get the name of the next panel
+---@return string
 M.getNext = function(self)
 	local current = 0
 	for i, v in ipairs(PanelOrder) do
@@ -176,6 +192,8 @@ M.getNext = function(self)
 	return PanelOrder[current]
 end
 
+-- Get the name of the previous panel
+---@return string
 M.getPrevious = function(self)
 	local current = 0
 	for i, v in ipairs(PanelOrder) do
@@ -194,6 +212,7 @@ M.getPrevious = function(self)
 	return PanelOrder[current]
 end
 
+-- Focus the next panel
 M.next = function(self)
 	self.currentView = self:getNext()
 
@@ -202,6 +221,7 @@ M.next = function(self)
 	self.ignoreFTAutocmd = false
 end
 
+-- Focus the previous panel
 M.previous = function(self)
 	self.currentView = self:getPrevious()
 
@@ -210,6 +230,8 @@ M.previous = function(self)
 	self.ignoreFTAutocmd = false
 end
 
+-- Open the panel
+---@param opts openOpts
 M.open = function(self, opts)
 	if opts.name then
 		local optView = getView(self, opts.name)
@@ -244,21 +266,24 @@ M.open = function(self, opts)
 	end
 end
 
-local notOnTab = function(self)
+-- Check if panel is open in the current tab page
+local openInTab = function(self)
 	for _, v in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
 		if self.win == v then
-			return false
+			return true
 		end
 	end
 
-	return true
+	return false
 end
 
+-- Toggle the panel
+---@param focus? boolean
 M.toggle = function(self, focus)
 	if self:isOpen() then
 		-- if the panel is open, but not on the current tab page, open it
 		-- on this tabpage
-		if notOnTab(self) then
+		if not openInTab(self) then
 			self:close()
 			goto open
 		end
@@ -275,12 +300,6 @@ M.toggle = function(self, focus)
 	end
 
 	self:open({ focus = focus })
-end
-
-M.resize = function(self)
-	vim.o.eventignore = "WinResized"
-	vim.api.nvim_win_set_height(self.win, self.config.size)
-	vim.o.eventignore = ""
 end
 
 return M
