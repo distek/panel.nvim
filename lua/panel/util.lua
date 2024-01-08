@@ -74,4 +74,13 @@ function M.ignoreFt(buf, ignoreFts)
 	return false
 end
 
+function M.getCurTab()
+	local panel = require("panel.panel")
+	if panel.config.tabScoped then
+		return vim.api.nvim_get_current_tabpage()
+	end
+
+	return 1
+end
+
 return M

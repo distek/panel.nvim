@@ -5,6 +5,7 @@
 ---@field size number
 ---@field extPanels string[]
 ---@field views view[]
+---@field tabScoped boolean
 
 ---@class view
 ---@field name string
@@ -13,16 +14,31 @@
 ---@field close function|nil
 ---@field wo table<string, any>
 
----@class package
+---@class tabScope
 ---@field currentView string|nil
+---@field bufs table<string,number|nil>
+---@field win winid|nil
+---@field resize? function
+---@field isOpen? function
+---@field close? function
+---@field setView? function
+---@field handleClickTab? function
+---@field getNext? function
+---@field getPrevious? function
+---@field next? function
+---@field previous? function
+---@field open? function
+---@field toggle? function
+
+---@class package
 ---@field winResized boolean
 ---@field winClosing boolean
 ---@field ignoreFTAutocmd boolean
----@field bufs table<string,number|nil>
----@field win winid|nil
 ---@field defaultWinOpts table<string, any>
 ---@field config config
 ---@field resize? function
+---@field setup? function
+---@field tabScopes tabScope[]
 ---@field isOpen? function
 ---@field close? function
 ---@field setView? function
@@ -33,7 +49,8 @@
 ---@field next? function
 ---@field previous? function
 ---@field toggle? function
----@field setup? function
+---@field newPanel? function
+---@field getWin? function
 
 ---@class openOpts
 ---@field name? string
