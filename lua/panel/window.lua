@@ -28,9 +28,9 @@ function M.createWindow(size)
 		callback = function()
 			if not util.debounceResize then
 				if panel.winResized then
-					if vim.api.nvim_win_is_valid(panel.win) then
+					if vim.api.nvim_win_is_valid(panelWin) then
 						panel.config.size =
-							vim.api.nvim_win_get_height(panel.win)
+							vim.api.nvim_win_get_height(panelWin)
 
 						panel.winResized = false
 						util.setDebounceResize()
